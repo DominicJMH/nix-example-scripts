@@ -66,10 +66,10 @@ Nix provides exactly the right primitives for this.
 In this flake, we use it to join:
 
 * Our shell script
-* `cowsay`
 * `ddate`
+* And the output of our shell script
 
-The result is a single `$out` directory whose `bin/` contains all three executables. This guarantees that when our script is installed, its dependencies are installed alongside it.
+The result is a single `$out` directory whose `bin/` contains both executables. This guarantees that when our script is installed, its dependencies are installed alongside it.
 
 However, simply placing binaries next to each other is not enough: we still need to ensure they are on the `PATH` when the script runs.
 
@@ -199,4 +199,3 @@ This repository demonstrates a robust, idiomatic way to package shell scripts wi
 * Runtime environments are handled explicitly and safely
 * The result is portable, reproducible, and maintainable
 
-This pattern scales well from simple scripts to more complex tooling and is a solid foundation for real-world Nix-based workflows.
