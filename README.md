@@ -1,2 +1,2 @@
 # nix-example-scripts
-Various script to highlight how to nixify more common Linux tasks
+This repository contains various examples of how common tasks can be done the Nix "way".
