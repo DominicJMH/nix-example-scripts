@@ -1,5 +1,5 @@
 {
-  description = "A Nix flake should how to run and execute shell scripts the Nix way!";
+  description = "A Nix flake showing how to run and execute shell scripts the Nix way!";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
