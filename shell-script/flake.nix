@@ -17,7 +17,7 @@
         packages.my-script = pkgs.symlinkJoin {
           name = my-name;
           paths = [ my-script ] ++ my-buildInputs;
-          buildInputs = [ pkgs.makeWrapper ];
+          buildInputs = [ pkgs.makeWrapper [ my-script my-buildInputs ] ];
           postBuild = "wrapProgram $out/bin/${my-name} --prefix PATH : $out/bin";
         };
       }
