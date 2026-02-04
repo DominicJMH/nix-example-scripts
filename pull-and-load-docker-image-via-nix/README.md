@@ -1,7 +1,3 @@
-Here’s a cleaner, more structured rewrite with a conversational tone, clearer flow, and tighter explanations, while keeping all the technical detail intact.
-
----
-
 # Pulling a Private GHCR Image with Nix and Extracting the Containerised Binary
 
 This guide walks through how to pull a private image from GitHub Container Registry (GHCR) using a Nix flake, and then extract a binary from that container. The concrete example used throughout is the **TII onboarding agent** image.
@@ -231,6 +227,6 @@ You may see an error like:
 panic: open /var/log/onboarding-agent.log: permission denied
 ```
 
-That’s expected—the binary is running correctly, but it doesn’t have permission to write logs in this environment.
+The binary is running correctly, but it doesn’t have permission to write logs in this environment which can be fixed by running with sudo.
 
 ---
