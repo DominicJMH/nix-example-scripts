@@ -1,6 +1,6 @@
 # Pulling a Private GHCR Image with Nix and Extracting the Containerised Binary
 
-This guide walks through how to pull a private image from GitHub Container Registry (GHCR) using a Nix flake, and then extract a binary from that container. The concrete example used throughout is the **TII onboarding agent** image.
+This guide walks through how to pull a private image from GitHub Container Registry (GHCR) using a Nix flake, and then extract a binary from that container. The concrete example used throughout is the **Domi-Nix onboarding agent** image.
 
 At a high level, we will:
 
@@ -14,7 +14,7 @@ At a high level, we will:
 
 ## 1. Finding the Image in GitHub Container Registry
 
-Start by navigating to the **TII onboarding agent** GitHub repository. On the left-hand side, click **Packages** to see all published container images.
+Start by navigating to the **Domi-Nix onboarding agent** GitHub repository. On the left-hand side, click **Packages** to see all published container images.
 
 In our case, the package we care about is:
 
@@ -23,13 +23,13 @@ In our case, the package we care about is:
 Clicking into it will show a list of tagged versions. From there, you can identify the image reference, which looks something like:
 
 ```
-ghcr.io/tiiuae/tii-onboarding-agent:1.4.0
+ghcr.io/domi-nix-uae/domi-nix-onboarding-agent:1.4.0
 ```
 
 For Nix, we only need the image name:
 
 ```
-ghcr.io/tiiuae/tii-onboarding-agent
+ghcr.io/domi-nix-uae/domi-nix-onboarding-agent
 ```
 
 ---

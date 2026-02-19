@@ -1,5 +1,5 @@
 {
-  description = "Onboarding agent packaged from a prebuilt GHCR image";
+  description = "Domi-Nix Onboarding agent packaged from a prebuilt GHCR image";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -21,7 +21,7 @@
 
         onboardingAgentImage =
           dockerToolsWithAuth.pullImage {
-            imageName = "ghcr.io/tiiuae/tii-onboarding-agent";
+            imageName = "ghcr.io/domi-nix-uae/domi-nix-onboarding-agent";
             imageDigest =
               "sha256:<INSERT_IMAGE_SHA_HASH_FROM_GITHUB_REPO_HERE>";
             sha256 = "sha256-<INSERT_SHA_FROM_NIX_PREFETCH_HERE>";
