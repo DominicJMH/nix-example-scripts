@@ -18,7 +18,7 @@ Start by navigating to the **Domi-Nix onboarding agent** GitHub repository. On t
 
 In our case, the package we care about is:
 
-**`tii-onboarding-agent`**
+**`domi-nix-onboarding-agent`**
 
 Clicking into it will show a list of tagged versions. From there, you can identify the image reference, which looks something like:
 
@@ -40,7 +40,7 @@ A natural first attempt is to use Nix’s built-in Docker tooling:
 
 ```nix
 pkgs.dockerTools.pullImage {
-  imageName = "ghcr.io/tiiuae/tii-onboarding-agent";
+  imageName = "ghcr.io/domi-nix-uae/domi-nix-onboarding-agent";
   imageDigest = "sha256:…";
 }
 ```
@@ -133,21 +133,21 @@ nix-shell -p nix-prefetch-docker
 * the image digest
 
 ```bash
-nix-prefetch-docker ghcr.io/tiiuae/tii-onboarding-agent \
+nix-prefetch-docker ghcr.io/domi-nix-uae/domi-nix-onboarding-agent \
   --image-digest sha256:<ENTER_YOUR_SHA_HERE>
 ```
 
 Example output (trimmed):
 
 ```
--> ImageName: ghcr.io/tiiuae/tii-onboarding-agent
+-> ImageName: ghcr.io/domi-nix-uae/domi-nix-onboarding-agent
 -> ImageDigest: sha256:<ENTER_YOUR_SHA_HERE>
 -> ImageHash: sha256-...
 {
-  imageName = "ghcr.io/tiiuae/tii-onboarding-agent";
+  imageName = "ghcr.io/domi-nix-uae/domi-nix-onboarding-agent";
   imageDigest = "sha256:<ENTER_YOUR_SHA_HERE>";
   hash = "sha256-<THIS_IS_THE_IMAGE_HASH_WE_WANT>";
-  finalImageName = "ghcr.io/tiiuae/tii-onboarding-agent";
+  finalImageName = "ghcr.io/domi-nix-uae/domi-nix-onboarding-agent";
   finalImageTag = "latest";
 }
 ```
@@ -163,7 +163,7 @@ Now we can finally pull the image successfully:
 ```nix
 onboardingAgentImage =
   dockerToolsWithAuth.pullImage {
-    imageName = "ghcr.io/tiiuae/tii-onboarding-agent";
+    imageName = "ghcr.io/domi-nix/domi-nix-onboarding-agent";
     imageDigest = "sha256:<YOUR_IMAGE_DIGEST>";
     sha256 = "sha256-<HASH_FROM_NIX-PREFETCH>";
     os = "linux";
