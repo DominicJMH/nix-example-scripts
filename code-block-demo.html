@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Block Feature Demo — abhinavsarkar.net</title>
+
+  <!--
+    Swap no-js → js synchronously before first paint so that .no-js rules
+    never flash in when JavaScript is available.
+  -->
+  <script>
+    document.documentElement.className =
+      document.documentElement.className.replace('no-js', 'js');
+  </script>
+
+  <style>
+    /* ── Fira Mono (self-hosted, same path as the main site) ── */
+    @font-face {
+      font-family: 'Fira Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('/fonts/fira-mono-v6-latin-regular.woff2') format('woff2'),
+           url('/fonts/fira-mono-v6-latin-regular.woff')  format('woff'),
+           url('/fonts/fira-mono-v6-latin-regular.ttf')   format('truetype');
+    }
+
+    /* ── Noto Serif (self-hosted, same path as the main site) ── */
+    @font-face {
+      font-family: 'Noto Serif';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('/fonts/noto-serif-v6-latin-regular.eot');
+      src: url('/fonts/noto-serif-v6-latin-regular.eot?#iefix') format('embedded-opentype'),
+           url('/fonts/noto-serif-v6-latin-regular.woff2') format('woff2'),
+           url('/fonts/noto-serif-v6-latin-regular.woff')  format('woff'),
+           url('/fonts/noto-serif-v6-latin-regular.ttf')   format('truetype'),
+           url('/fonts/noto-serif-v6-latin-regular.svg#NotoSerif') format('svg');
+    }
+
+    /* ── CSS custom properties — compiled from SCSS source ─────────────────
+       Light-theme values come from css/light-theme.scss + css/_consts.scss.
+       Dark-theme values come from css/dark-theme.scss.
+       Both sets of values match the compiled output in css/{light,dark}-theme.css.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    /* Default: light */
+    :root {
+      --text-color:          #333;
+      --text-color-u30:      gray;
+      --border-color:        #ababab;
+      --border-color-u30:    #ebebeb;   /* lighten(#ababab, 25%) */
+      --background-color:    #fdfdfd;
+      --background-color-d10:#e4e4e4;
+      --code-bgcolor:        #fafafa;
+      --code-lnum-color:     #a42828;
+      --mark-bgcolor:        #dee7fd;
+    }
+
+    /* Dark via system preference */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-color:          #d9d9d9;
+        --text-color-u30:      #bfbfbf;
+        --border-color:        #545454;
+        --border-color-u30:    #3b3b3b;  /* darken(invert(#ababab), 10%) */
+        --background-color:    #282828;
+        --background-color-d10:#424242;
+        --code-bgcolor:        #282c34;
+        --code-lnum-color:     #d58989;
+        --mark-bgcolor:        #513b05;
+      }
+    }
+
+    /* Dark/light via body class set by the toggle button */
+    body.dark {
+      --text-color:          #d9d9d9;
+      --text-color-u30:      #bfbfbf;
+      --border-color:        #545454;
+      --border-color-u30:    #3b3b3b;
+      --background-color:    #282828;
+      --background-color-d10:#424242;
+      --code-bgcolor:        #282c34;
+      --code-lnum-color:     #d58989;
+      --mark-bgcolor:        #513b05;
+    }
+    body.light {
+      --text-color:          #333;
+      --text-color-u30:      gray;
+      --border-color:        #ababab;
+      --border-color-u30:    #ebebeb;
+      --background-color:    #fdfdfd;
+      --background-color-d10:#e4e4e4;
+      --code-bgcolor:        #fafafa;
+      --code-lnum-color:     #a42828;
+      --mark-bgcolor:        #dee7fd;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────────
+       Mirrors the max-width centered column in css/_default.scss.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Serif', 'Georgia', serif;
+      font-size: 0.9em;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      min-width: 25rem;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    main {
+      padding: 0 1em 4em;
+      font-size: 1.1em;
+      max-width: 50rem;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 { font-family: 'Noto Serif', 'Georgia', serif; }
+    h2 {
+      font-family: 'Noto Serif', 'Georgia', serif;
+      margin-top: 2.5em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.3em;
+    }
+    p  { line-height: 1.65; }
+    code {
+      font-family: 'Fira Mono', monospace;
+      font-size: 0.85em;
+    }
+
+    /* ── Base pre/code — from css/_default.scss ─────────────────────────── */
+
+    pre {
+      padding: 0.2em;
+      overflow-x: auto;
+      font-size: 0.95em;
+      line-height: 1.6;
+    }
+    pre code {
+      display: block;
+    }
+
+    /* mark — build-time line-range emphasis via emphasizeCode transform */
+    pre code mark {
+      background-color: var(--mark-bgcolor);
+      color: inherit;
+      padding: 0.3em 0;
+      display: block;   /* fill the full line width inside the code column */
+    }
+
+    /* ── Article pre — from css/article.scss ───────────────────────────── */
+
+    article pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background-color: var(--code-bgcolor);
+      position: relative;   /* anchor for the language label */
+    }
+
+    /* More specific than the plugin's injected .hljs-ln td{padding:0} */
+    article pre table.hljs-ln td.hljs-ln-numbers {
+      color: var(--code-lnum-color);
+      vertical-align: top;
+      border-right: 1px dashed var (--border-color);
+      padding: 0 0.3em 0 0.4em;
+      font-size: smaller;
+      user-select: none;
+      -webkit-user-select: none;
+      white-space: nowrap;
+    }
+
+    article pre table.hljs-ln td.hljs-ln-code {
+      padding: 0 0.4em 0 0.3em;
+      width: 100%;
+    }    
+
+    /* ── Language label — injected by JS after hljs detects the language ── */
+
+    .code-lang-label {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: #d9d9d9;
+      color: #545454;
+      font-family: 'Fira Mono', monospace;
+      font-size: 0.72em;
+      line-height: 1;
+      padding: 0.35em 0.6em;
+      user-select: none;
+      pointer-events: none;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Line-number table cells injected by highlightjs-line-numbers ───────
+       From css/article.scss. These target the <td> elements the plugin wraps
+       each line in: hljs-ln-numbers | hljs-ln-code.
+       The main site loads normalize.css which sets border-collapse:collapse
+       on all tables. We replicate that here so cell padding behaves the same.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    table.hljs-ln {
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    td.hljs-ln-numbers {
+      color: var(--code-lnum-color);
+      vertical-align: top;
+      border-right: 1px dashed var(--border-color);
+      padding: 0 0.8em 0 0.4em;
+      font-size: smaller;
+      user-select: none;
+      -webkit-user-select: none;
+      white-space: nowrap;
+    }
+    td.hljs-ln-code {
+      padding: 0 0.4em 0 0.8em;
+      width: 100%;
+    }
+
+    /* ── No-JS fallback: Pandoc-native token colours ─────────────────────────
+       From css/_syntax.scss. These apply when JavaScript is absent and
+       <html class="no-js"> remains set. Pandoc emits spans with short
+       two-letter classes (kw, dt, co, etc.). Dark mode is approximated with
+       a CSS filter since fine-grained per-token dark theming requires JS.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    .no-js pre,
+    .no-js code {
+      background-color: #f8f8f8;
+      font-family: 'Fira Mono', monospace;
+    }
+    .no-js code { color: #333; }
+
+    /* Dark-mode invert approximation */
+    @media (prefers-color-scheme: dark) {
+      .no-js code { filter: invert(80%); }
+    }
+    body.dark  .no-js code { filter: invert(80%); }
+    body.light .no-js code { filter: invert(0%);  }
+
+    /* Pandoc token-class colours (light-theme base, inverted for dark above) */
+    .no-js code span.kw { color: #204a87; font-weight: bold; }
+    .no-js code span.dt { color: #204a87; }
+    .no-js code span.dv,
+    .no-js code span.bn,
+    .no-js code span.fl { color: #0000cf; }
+    .no-js code span.ch,
+    .no-js code span.st { color: #4e9a06; }
+    .no-js code span.co { color: #8f5902; font-style: italic; }
+    .no-js code span.ot { color: #8f5902; }
+    .no-js code span.al { color: #ef2929; }
+    .no-js code span.fu { color: #000000; }
+    .no-js code span.er { color: #a40000; font-weight: bold; }
+    .no-js code span.wa { color: #8f5902; font-weight: bold; font-style: italic; }
+    .no-js code span.cn,
+    .no-js code span.sc { color: #000000; }
+    .no-js code span.vs,
+    .no-js code span.ss { color: #4e9a06; }
+    .no-js code span.va { color: #000000; }
+    .no-js code span.cf { color: #204a87; font-weight: bold; }
+    .no-js code span.op { color: #ce5c00; font-weight: bold; }
+    .no-js code span.pp { color: #8f5902; font-style: italic; }
+    .no-js code span.at { color: #c4a000; }
+    .no-js code span.do,
+    .no-js code span.an,
+    .no-js code span.cv,
+    .no-js code span.in { color: #8f5902; font-weight: bold; font-style: italic; }
+
+    /* ── Pandoc-highlight class: same token colours but always visible ────────
+       Used for the build-time emphasis demo block, which is intentionally
+       excluded from hljs so that the <mark> tags are preserved. Mirrors
+       the .no-js rules without the .no-js prefix so it works regardless of JS.
+    ─────────────────────────────────────────────────────────────────────── */
+
+    pre.pandoc-highlight,
+    pre.pandoc-highlight code {
+      background-color: #f8f8f8;
+      font-family: 'Fira Mono', monospace;
+    }
+
+    /* Dark-mode invert for the Pandoc-highlight block */
+    @media (prefers-color-scheme: dark) {
+      pre.pandoc-highlight code { filter: invert(80%); }
+    }
+    body.dark  pre.pandoc-highlight code { filter: invert(80%); }
+    body.light pre.pandoc-highlight code { filter: invert(0%);  }
+
+    pre.pandoc-highlight code span.kw { color: #204a87; font-weight: bold; }
+    pre.pandoc-highlight code span.dt { color: #204a87; }
+    pre.pandoc-highlight code span.dv,
+    pre.pandoc-highlight code span.bn,
+    pre.pandoc-highlight code span.fl { color: #0000cf; }
+    pre.pandoc-highlight code span.ch,
+    pre.pandoc-highlight code span.st { color: #4e9a06; }
+    pre.pandoc-highlight code span.co { color: #8f5902; font-style: italic; }
+    pre.pandoc-highlight code span.ot { color: #8f5902; }
+    pre.pandoc-highlight code span.fu { color: #000000; }
+    pre.pandoc-highlight code span.er { color: #a40000; font-weight: bold; }
+    pre.pandoc-highlight code span.cn,
+    pre.pandoc-highlight code span.sc { color: #000000; }
+    pre.pandoc-highlight code span.va { color: #000000; }
+    pre.pandoc-highlight code span.cf { color: #204a87; font-weight: bold; }
+    pre.pandoc-highlight code span.op { color: #ce5c00; font-weight: bold; }
+    pre.pandoc-highlight code span.pp { color: #8f5902; font-style: italic; }
+    pre.pandoc-highlight code span.at { color: #c4a000; }
+
+    /* ── Dark-mode toggle button — mirrors #dark-mode-toggle in the site ──── */
+
+    #theme-toggle {
+      position: fixed;
+      right: 1rem;
+      top: 1rem;
+      z-index: 99;
+      font-size: small;
+      font-family: 'Noto Serif', 'Georgia', serif;
+      opacity: 0.65;
+      cursor: pointer;
+      background: var(--background-color-d10);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 0.3em 0.8em;
+      border-radius: 3px;
+      line-height: 1.5em;
+      transition: opacity 0.1s;
+    }
+    #theme-toggle:hover  { opacity: 1; }
+    #theme-toggle:focus  { outline: none; }
+    @media print        { #theme-toggle { display: none; } }
+
+    /* ── Small-screen adjustments ───────────────────────────────────────── */
+    @media screen and (max-width: 640px) {
+      body { font-size: 0.8em; }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="theme-toggle">Dark</button>
+
+  <main>
+    <article>
+      <h1>Code Block Feature Demo</h1>
+      <p>
+        A self-contained reproduction of the code block highlighting and styling
+        pipeline used on <a href="https://abhinavsarkar.net" target="_blank"
+        rel="noopener">abhinavsarkar.net</a>. Three features are demonstrated:
+      </p>
+      <ol>
+        <li>Client-side syntax highlighting + line numbers via <strong>highlight.js</strong></li>
+        <li>Full-viewport-width <strong>breakout</strong> of code blocks beyond the article column</li>
+        <li>Build-time <strong>line-range emphasis</strong> via the <code>emphasizeCode</code> Pandoc transform</li>
+      </ol>
+
+      <!-- ─────────────────────────────────────────────────────────────────
+           Example 1: highlight.js + line numbers + full-width breakout
+           highlight.js tokenises the code client-side by reading the
+           language class ("language-haskell"), then the line-numbers plugin
+           restructures the block into a two-column <table>. styleCode() then
+           shifts <pre> leftward so it spans the full viewport width.
+      ───────────────────────────────────────────────────────────────────── -->
+      <h2>1 — Standard code block (highlight.js + line numbers + breakout)</h2>
+      <p>
+        highlight.js detects the language from the <code>language-haskell</code>
+        class and tokenises the block client-side. The line-numbers plugin
+        restructures it into a two-column table
+        (<code>td.hljs-ln-numbers</code> / <code>td.hljs-ln-code</code>).
+        <code>styleCode()</code> then offsets the <code>&lt;pre&gt;</code>
+        leftward with a negative <code>left</code> value equal to its own
+        viewport offset, stretching it to full window width while keeping the
+        code text column-aligned via compensating <code>margin-left</code> on
+        the inner <code>&lt;code&gt;</code>.
+      </p>
+      <pre><code class="language-haskell">module Site.PostCompiler where
+
+import Data.Maybe        (fromMaybe)
+import Hakyll            hiding (relativizeUrls)
+import Site.ERT
+import Site.Pandoc.Compiler
+import Site.Util
+import System.FilePath.Posix (takeBaseName)
+
+-- | Entry point for both published posts and drafts.
+doCompilePosts :: Bool -> Bool -> Tags -> String -> [Identifier] -> Rules ()
+doCompilePosts mentionsEnabled commentsEnabled tags env posts = compile $ do
+  post      <- getUnderlying
+  alignment <- fromMaybe "left" <$> getMetadataField post "toc"
+  path      <- getResourceFilePath
+  let postSlug = takeBaseName path
+
+  comments <- sortComments
+    =<< loadAllSnapshots (fromGlob $ "comments/" <> postSlug <> "/*.md") "comment"
+  let commentCount = show $ length comments
+
+  sortedPosts <- sortChronological posts
+  nextCtx     <- navLinkCtx "next_post" $ sortedPosts `itemAfter`  post
+  prevCtx     <- navLinkCtx "prev_post" $ sortedPosts `itemBefore` post
+
+  content <- readContentWithPandoc
+  let ert = timeEstimate . itemBody $ content
+
+  void $ makeItem ert          >>= saveSnapshot "ert"
+  void $ makeItem commentCount >>= saveSnapshot "comment_count"
+
+  let ctx = postCtxWithTags tags
+         <> nextCtx <> prevCtx
+         <> constField "post_slug"     postSlug
+         <> constField "post_ert"      ert
+         <> constField "comment_count" commentCount
+         <> boolField  "comments_enabled" (const commentsEnabled)
+         <> boolField  "live_reload"      (const $ env == "DEV")
+
+  pandocItemCompiler (postContentTransforms postSlug alignment) content
+    >>= saveSnapshot "content"
+    >>= loadAndApplyTemplate "templates/post.html"    ctx
+    >>= loadAndApplyTemplate "templates/default.html" ctx
+    >>= relativizeUrls env
+    >>= removeIndexHtml</code></pre>
+
+          <!-- ─────────────────────────────────────────────────────────────────
+           Example 2 — Go block
+           Demonstrates highlight.js auto-detection for Go.
+      ───────────────────────────────────────────────────────────────────── -->
+      <h2>2 — Go block (concurrency example)</h2>
+      <p>
+        This example demonstrates a small concurrent worker pool written in Go.
+        highlight.js will detect <code>language-go</code> and apply syntax
+        highlighting automatically.
+      </p>
+      <pre><code class="language-go">package main
+
+      import (
+        "context"
+        "fmt"
+        "math/rand"
+        "sync"
+        "time"
+      )
+
+      type Worker struct {
+        ID int
+      }
+
+      func (w Worker) Process(ctx context.Context, jobs &lt;-chan int, results chan&lt;- int, wg *sync.WaitGroup) {
+        defer wg.Done()
+        for {
+          select {
+          case &lt;-ctx.Done():
+            fmt.Printf("[worker-%d] shutting down\n", w.ID)
+            return
+          case job, ok := &lt;-jobs:
+            if !ok {
+              return
+            }
+            sleep := time.Duration(rand.Intn(300)+100) * time.Millisecond
+            time.Sleep(sleep)
+            results &lt;- job * job
+          }
+        }
+      }
+
+      func main() {
+        rand.Seed(time.Now().UnixNano())
+
+        ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+        defer cancel()
+
+        jobs := make(chan int)
+        results := make(chan int)
+
+        var wg sync.WaitGroup
+
+        // Start workers
+        for i := 0; i &lt; 3; i++ {
+          wg.Add(1)
+          go Worker{ID: i}.Process(ctx, jobs, results, &wg)
+        }
+
+        // Feed jobs
+        go func() {
+          for i := 1; i &lt;= 10; i++ {
+            jobs &lt;- i
+          }
+          close(jobs)
+        }()
+
+        // Close results after workers finish
+        go func() {
+          wg.Wait()
+          close(results)
+        }()
+
+        sum := 0
+        for r := range results {
+          sum += r
+        }
+
+        fmt.Println("Final sum:", sum)
+        }</code></pre>
+
+      <!-- ─────────────────────────────────────────────────────────────────
+           Example 2: second language, showing auto-detection capability.
+           A separate Haskell language pack is loaded alongside the core
+           script; here JavaScript is tokenised using the built-in pack.
+      ───────────────────────────────────────────────────────────────────── -->
+      <h2>2 — JavaScript block (language auto-detection)</h2>
+      <p>
+        The site loads a dedicated Haskell language pack alongside the highlight.js
+        core. Other languages use the built-in packs bundled with the core.
+        Below is the actual <code>styleCode()</code> / <code>unstyleCode()</code>
+        implementation from <code>js/post-styling.js</code> that drives the
+        breakout effect above.
+      </p>
+      <pre><code class="language-javascript">(function () {
+  function styleCode() {
+    var ww = jQuery(window).width();
+    var bw = jQuery('main article').width();
+
+    // Shift each <pre> to the left edge of the viewport.
+    jQuery('article pre').each(function () {
+      if (jQuery(this).parents('section.footnotes').length === 0) {
+        var margin = jQuery(this).offset().left;
+        jQuery(this).css('left',  '-' + margin + 'px');
+        jQuery(this).css('width', ww + 'px');
+      }
+    });
+
+    // Re-indent the inner <code> so its text aligns with the article body.
+    jQuery('article pre code').each(function () {
+      if (jQuery(this).parents('section.footnotes').length === 0) {
+        var margin = jQuery(this).offset().left;
+        jQuery(this).css('margin-left',  margin + 'px');
+        jQuery(this).css('margin-right', (ww - margin - bw) + 'px');
+      }
+    });
+  }
+
+  function unstyleCode() {
+    jQuery('article pre').each(function () {
+      jQuery(this).css('left', 'auto').css('width', 'auto');
+    });
+    jQuery('article pre code').each(function () {
+      jQuery(this).css('margin-left', 'auto').css('margin-right', 'auto');
+    });
+  }
+
+  function restyleOnResize() {
+    clearTimeout(window.resizedFinished);
+    window.resizedFinished = setTimeout(styleCode, 250);
+  }
+
+  jQuery(document).ready(function () {
+    styleCode();
+    jQuery(window).resize(restyleOnResize);
+  });
+
+  // Reset layout for print, restore after.
+  window.onbeforeprint = unstyleCode;
+  window.onafterprint  = styleCode;
+}());</code></pre>
+
+      <!-- ─────────────────────────────────────────────────────────────────
+           Example 3: build-time line-range emphasis (emphasizeCode)
+           The emphasizeCode AST transform in Site/Pandoc.hs intercepts
+           CodeBlock nodes with an `emphasize` attribute and uses the
+           pandoc-emphasize-code library to wrap the matched lines in <mark>
+           tags. Because this runs at build time (server-side), the output
+           carries Pandoc's own token spans rather than hljs spans.
+           Running hljs.highlightBlock() on this element would strip the
+           <mark> tags (it reads .textContent), so this block is deliberately
+           excluded from hljs processing via the `pandoc-highlight` class.
+           Dark mode uses filter: invert(80%), matching the .no-js fallback
+           behaviour from css/_syntax.scss.
+      ───────────────────────────────────────────────────────────────────── -->
+      <h2>3 — Build-time line-range emphasis (<code>emphasizeCode</code>)</h2>
+      <p>
+        The <code>emphasizeCode</code> function in <code>Site/Pandoc.hs</code>
+        is a Pandoc AST transform that runs at build time, before any browser
+        JS is involved. It matches <code>CodeBlock</code> nodes annotated with
+        an <code>emphasize=&lt;ranges&gt;</code> attribute, parses the range
+        via <code>pandoc-emphasize-code</code>, and wraps those lines in
+        <code>&lt;mark&gt;</code> tags inside Pandoc's own token span markup.
+        The result is baked into the static HTML.
+      </p>
+      <p>
+        Because highlight.js v9's <code>highlightBlock</code> reads
+        <code>element.textContent</code> and rewrites <code>innerHTML</code>
+        wholesale, it would destroy the <code>&lt;mark&gt;</code> tags. The
+        <code>emphasizeCode</code> feature therefore operates on the
+        <strong>no-JS / Pandoc-native-highlighting path</strong>. The block
+        below replicates the static HTML the pipeline would emit for
+        <code>emphasize=5-7</code> (lines 5–7 highlighted):
+      </p>
+      <!--
+        pre.pandoc-highlight is excluded from hljs by the JS below.
+        The token spans are exactly what Pandoc's syntax highlighter emits.
+        The <mark> tags are what emphasizeCode inserts around the given range.
+      -->
+      <pre class="pandoc-highlight"><code><span class="kw">module</span> <span class="dt">Site.Pandoc</span> <span class="kw">where</span>
+
+<span class="kw">import</span> <span class="dt">Data.List</span> ((\\))
+<span class="kw">import</span> <span class="dt">Text.Pandoc.Definition</span>
+<mark><span class="kw">import qualified</span> <span class="dt">Text.Pandoc.Filter.EmphasizeCode.Parser</span>   <span class="kw">as</span> <span class="dt">EC</span>
+<span class="kw">import qualified</span> <span class="dt">Text.Pandoc.Filter.EmphasizeCode.Chunking</span>  <span class="kw">as</span> <span class="dt">EC</span>
+<span class="kw">import qualified</span> <span class="dt">Text.Pandoc.Filter.EmphasizeCode.Renderable</span> <span class="kw">as</span> <span class="dt">EC</span></mark>
+<span class="kw">import qualified</span> <span class="dt">Text.Pandoc.Filter.EmphasizeCode.Html</span>      <span class="kw">as</span> <span class="dt">EC</span>
+
+<span class="co">-- | Wrap specified line ranges in &lt;mark&gt; at build time.</span>
+<span class="co">--   Runs as a Pandoc AST walk before HTML is written.</span>
+<span class="fu">emphasizeCode</span> <span class="op">::</span> <span class="dt">Block</span> <span class="op">-&gt;</span> <span class="dt">Block</span>
+<span class="fu">emphasizeCode</span> cb<span class="op">@</span>(<span class="dt">CodeBlock</span> (id', classes, attrs) contents) <span class="op">=</span>
+  <span class="kw">case</span> lookupRanges attrs <span class="op">&gt;&gt;=</span> (<span class="dt">EC</span><span class="op">.</span>runParser <span class="op">.</span> <span class="dt">EC</span><span class="op">.</span>parseRanges) <span class="kw">of</span>
+    <span class="dt">Just</span> (<span class="dt">Right</span> ranges) <span class="op">-&gt;</span>
+      <span class="dt">EC</span><span class="op">.</span>renderEmphasized (<span class="dt">EC</span><span class="op">.</span><span class="dt">Html</span> <span class="dt">EC</span><span class="op">.</span><span class="dt">Mark</span>)
+        (id', classes, <span class="fu">filter</span> (\(k, _) <span class="op">-&gt;</span> k <span class="op">/=</span> <span class="st">"emphasize"</span>) attrs)
+        <span class="op">$</span> <span class="dt">EC</span><span class="op">.</span>emphasizeRanges (<span class="dt">EC</span><span class="op">.</span>splitRanges ranges) (<span class="dt">Text</span><span class="op">.</span>pack contents)
+    _ <span class="op">-&gt;</span> cb
+<span class="fu">emphasizeCode</span> x <span class="op">=</span> x
+</code></pre>
+
+      <h2>4 — No-JS fallback</h2>
+      <p>
+        When JavaScript is absent, <code>&lt;html class="no-js"&gt;</code>
+        stays set. The <code>_syntax.scss</code> stylesheet applies Pandoc's
+        token-span colours under <code>.no-js</code> selectors (e.g.
+        <code>.no-js code span.kw</code>). Dark mode is handled with a blanket
+        <code>filter: invert(80%)</code> rather than per-token overrides, since
+        fine-grained dark theming requires the dynamically loaded highlight.js
+        theme CSS. Disable JavaScript in your browser to see this path in
+        action for examples 1 and 2 above — they will fall back to unstyled
+        monospace text since their HTML contains no pre-tokenised Pandoc spans.
+        Example 3 will continue to display correctly as it is already
+        Pandoc-tokenised static HTML.
+      </p>
+    </article>
+  </main>
+
+  <!-- highlight.js core + Haskell language pack -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/haskell.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/go.min.js"></script>
+
+  <!-- Line numbers plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.1.0/highlightjs-line-numbers.min.js"></script>
+
+  <script>
+    // ── loadStyleSheet ─────────────────────────────────────────────────────────
+    // From templates/default.html. Injects a <link> with an optional media
+    // attribute so only the matching theme downloads and applies.
+    function loadStyleSheet(src, media) {
+      var el  = document.createElement('link');
+      el.rel  = 'stylesheet';
+      el.href = src;
+      if (media) el.media = media;
+      document.head.appendChild(el);
+      return el;
+    }
+
+    // ── highlight.js theme CSS — loaded dynamically, scoped by media query ────
+    // From js/post-styling.js. atom-one-dark applies when the system (or
+    // toggled) preference is dark; atom-one-light for light/no-preference.
+    var darkThemeLink  = loadStyleSheet(
+      'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css',
+      '(prefers-color-scheme: dark)'
+    );
+    var lightThemeLink = loadStyleSheet(
+      'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css',
+      '(prefers-color-scheme: no-preference), (prefers-color-scheme: light)'
+    );
+
+    // ── Initialise highlight.js ────────────────────────────────────────────────
+    // Explicitly skip pre.pandoc-highlight: that block carries Pandoc's own
+    // token spans + <mark> tags. hljs.highlightBlock reads .textContent and
+    // rewrites innerHTML, which would destroy both.
+    document.querySelectorAll('article pre:not(.pandoc-highlight) code')
+      .forEach(function (block) {
+        hljs.highlightBlock(block);
+
+        // In hljs v9, highlightBlock stores the result on block.result.
+        // Use it to read the detected (or explicitly set) language name.
+        var lang = block.result && block.result.language;
+        var pre  = block.closest('pre');
+        if (lang && pre) {
+          var label = document.createElement('span');
+          label.className   = 'code-lang-label';
+          label.textContent = lang;
+          pre.appendChild(label);
+        }
+
+        // lineNumbersBlock is available in highlightjs-line-numbers >= 2.x
+        if (typeof hljs.lineNumbersBlock === 'function') {
+          hljs.lineNumbersBlock(block, { singleLine: true });
+        }
+      });
+
+    // ── Dark / light toggle ────────────────────────────────────────────────────
+    // The main site uses the <dark-mode-toggle> custom element backed by
+    // dark-mode-toggle.mjs. Here we replicate the same body-class and
+    // theme-link behaviour with a plain button for self-containedness.
+    var toggle = document.getElementById('theme-toggle');
+
+    function applyDark() {
+      document.body.classList.add('dark');
+      document.body.classList.remove('light');
+      toggle.textContent   = 'Light';
+      darkThemeLink.media  = 'all';
+      lightThemeLink.media = 'not all';
+    }
+
+    function applyLight() {
+      document.body.classList.add('light');
+      document.body.classList.remove('dark');
+      toggle.textContent   = 'Dark';
+      darkThemeLink.media  = 'not all';
+      lightThemeLink.media = 'all';
+    }
+
+    toggle.addEventListener('click', function () {
+      if (document.body.classList.contains('dark')) {
+        applyLight();
+      } else {
+        applyDark();
+      }
+    });
+
+    // Sync the button label with the initial system preference.
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      toggle.textContent = 'Light';
+    }
+  </script>
+</body>
+</html>
